@@ -1,21 +1,20 @@
 using Infrastructure.Repositories;
 using Infrastructure.Services;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
-using Newtonsoft.Json;
 using Repository;
 using Repository.Repositories;
 using System;
 
-namespace UniversityMap
+namespace API
 {
     public class Startup
     {
@@ -34,15 +33,20 @@ namespace UniversityMap
                 .UseLoggerFactory(LoggerFactory.Create(buider => buider.AddConsole()));
             });
 
-            services.AddScoped(typeof(IRoomRepository), typeof(RoomRepository));
-            services.AddTransient<IRoomService, RoomService>();
-
             services.AddControllers();
             services.AddSwaggerGen(c =>
             {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "UniversityMap", Version = "v1" });
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "API", Version = "v1" });
             });
-            
+
+            services.AddScoped(typeof(IRoomRepository), typeof(RoomRepository));
+            services.AddScoped(typeof(IPathRepository), typeof(PathRepository));
+
+            services.AddTransient<IRoomService, RoomService>();
+            services.AddTransient<IPathService, PathService>();
+
+            services.AddTransient<IAlgorithmService, AlgorithmService>();
+
             services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
         }
 
@@ -52,7 +56,7 @@ namespace UniversityMap
             {
                 app.UseDeveloperExceptionPage();
                 app.UseSwagger();
-                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UniversityMap v1"));
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "API v1"));
             }
 
             app.UseHttpsRedirection();

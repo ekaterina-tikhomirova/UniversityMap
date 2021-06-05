@@ -1,0 +1,18 @@
+version: '3.9'
+
+services:
+  sqldata:
+    container_name: vsusqldata
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=Pass@word
+      - MSSQL_AGENT_ENABLED=true
+      - MSSQL_PID=Express
+    ports:
+      - "5000:1433"
+    volumes:
+      - vsu-sql-data:/var/opt/mssql2019/data
+
+volumes:
+  vsu-sql-data:
