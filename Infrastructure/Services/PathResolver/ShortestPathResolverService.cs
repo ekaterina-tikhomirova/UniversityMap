@@ -1,9 +1,5 @@
 ﻿using Infrastructure.Services.Models;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Infrastructure.Services.PathResolver
 {
@@ -23,7 +19,7 @@ namespace Infrastructure.Services.PathResolver
             Graph = new Graph();
             foreach (var room in map.rooms)
             {
-                Graph.AddVertex(room.Id);
+                Graph.AddVertex(room);
             }
 
             foreach (var path in map.paths)
@@ -103,21 +99,39 @@ namespace Infrastructure.Services.PathResolver
         ShortestPathModel GetPath(GraphVertex startVertex, GraphVertex endVertex)
         {
             List<int> ResultList = new List<int>();
-            result.FinalDistance = endVertex.EdgesWeightSum;
+            List<RoomModel> RoomModels = new List<RoomModel>();
+             result.FinalDistance = endVertex.EdgesWeightSum;
             while (startVertex != endVertex)
             {
                 if (endVertex.PreviousVertex == null)
                 {
                     return null;
                 }
-                //ResultList.Add(Guid.Parse(endVertex.ToString()));
+                RoomModels.Add(new RoomModel
+                {
+                    Id = endVertex.Id,
+                    X = endVertex.X,
+                    Y = endVertex.Y,
+                    Floor = endVertex.Floor,
+                    Number = endVertex.Number
+                });
+
                 ResultList.Add(endVertex.Id);
                 endVertex = endVertex.PreviousVertex;
             }
-            //ResultList.Add(Guid.Parse(startVertex.ToString()));
+            RoomModels.Add(new RoomModel
+            {
+                Id = startVertex.Id,
+                X = startVertex.X,
+                Y = startVertex.Y,
+                Floor = startVertex.Floor,
+                Number = startVertex.Number
+            });
+
             ResultList.Add(startVertex.Id);
             ResultList.Reverse();
             result.Path = ResultList;
+            result.Rooms = RoomModels;
             foreach (var vertex in Graph.Vertices)
             {
                 vertex.EdgesWeightSum = int.MaxValue;
@@ -143,6 +157,11 @@ namespace Infrastructure.Services.PathResolver
         public void AddVertex(int id)
         {
             Vertices.Add(new GraphVertex(id));
+        }
+
+        public void AddVertex(RoomModel room)
+        {
+            Vertices.Add(new GraphVertex(room));
         }
 
         public GraphEdge GetEdge(string FirstVertexName, string SecondVertexName)
@@ -203,6 +222,12 @@ namespace Infrastructure.Services.PathResolver
     public class GraphVertex
     {
         public int Id { get; }
+        public double X { get; set; }
+        public double Y { get; set; }
+        public string Number { get; set; }
+        public int Floor { get; set; }
+
+
         public List<GraphEdge> Edges { get; }
         public bool IsUnvisited { get; set; }
         public double EdgesWeightSum { get; set; }
@@ -219,6 +244,21 @@ namespace Infrastructure.Services.PathResolver
             PreviousVertex = null;
             NextVertices = new List<GraphVertex>();
         }
+
+        public GraphVertex(RoomModel room)
+        {
+            Id = room.Id;
+            X = room.X;
+            Y = room.Y;
+            Floor = room.Floor;
+            Number = room.Number;
+            Edges = new List<GraphEdge>();
+            IsUnvisited = true;
+            EdgesWeightSum = int.MaxValue;
+            PreviousVertex = null;
+            NextVertices = new List<GraphVertex>();
+        }
+
         public void AddNextVertex(GraphVertex secondVertex)
         {
             secondVertex.PreviousVertex = this;

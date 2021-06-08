@@ -29,7 +29,7 @@ namespace API.Controllers
             else
                 result.IsPathFound = true;
 
-            return Ok(result);
+            return Ok(result.Rooms.GroupBy(r => r.Floor));
         }
     }
 }
